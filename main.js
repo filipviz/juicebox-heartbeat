@@ -1,16 +1,8 @@
-import { schedule } from "node-cron";
 import dotenv from "dotenv";
 dotenv.config();
 
 const discord_webhook = process.env.DISCORD_WEBHOOK;
 const juicebox_subgraph = process.env.JUICEBOX_SUBGRAPH;
-
-// Run every minute
-schedule("* * * * *", () =>
-  main()
-    .then(() => console.log(`Successful run`))
-    .catch((e) => console.error(e))
-);
 
 // v2 payments within last minute
 const query = `{
@@ -26,6 +18,11 @@ const query = `{
     txHash
   }
 }`;
+
+main()
+  .then(() => console.log(`Successful run`))
+  .catch((e) => console.error(e));
+
 
 async function main() {
   fetch(juicebox_subgraph, {
