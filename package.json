@@ -1,0 +1,16 @@
+{
+  "name": "juice-pay-discord",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "author": "filipviz",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "node-cron": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
