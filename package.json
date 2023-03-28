@@ -7,8 +7,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "dotenv": "^16.0.3",
-    "node-cron": "^3.0.2"
+    "dotenv": "^16.0.3"
   },
   "engines": {
     "node": ">=18.0.0"
