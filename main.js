@@ -4,18 +4,20 @@ dotenv.config();
 const discord_webhook = process.env.DISCORD_WEBHOOK;
 const juicebox_subgraph = process.env.JUICEBOX_SUBGRAPH;
 
-// v2 payments within last minute
+// Payments within last minute
 const query = `{
   payEvents(where:{timestamp_gt: ${
     Math.floor(Date.now() / 1000) - 60
-  }, pv: "2"}){
+  }}){
     project {
+      handle
       metadataUri
     }
     amount
     projectId
     beneficiary
     txHash
+    pv
   }
 }`;
 
@@ -39,7 +41,7 @@ async function main() {
         ).then((res) => res.json());
         const project_name = metadata.name
           ? metadata.name
-          : `project ${payEvent.projectId}`;
+          : `v${payEvent.pv} project ${payEvent.projectId}`;
         const ens = await fetch(
           `https://api.ensideas.com/ens/resolve/${payEvent.beneficiary}`
         ).then((res) => res.json());
@@ -63,19 +65,19 @@ async function main() {
                   },
                   {
                     name: `Beneficiary`,
-                    value: `[${beneficiary}](https://etherscan.io/address/${payEvent.beneficiary})`,
+                    value: `[${beneficiary}](https://juicebox.money/account/${payEvent.beneficiary})`,
                     inline: true,
                   },
                   {
                     name: `Project`,
-                    value: `[${project_name}](https://juicebox.money/v2/p/${payEvent.projectId})`,
+                    value: `[${project_name}](https://juicebox.money/${pv === '2' ? 'v2/p/' + payEvent.projectId : 'p/' + payEvent.project.handle })`,
                     inline: true,
                   },
                 ],
               },
             ],
           }),
-          thumbnail: {
+          image: {
             url: metadata.logoUri
               ? `https://ipfs.io/ipfs/${metadata.logoUri.substring(
                   metadata.logoUri.lastIndexOf("/") + 1
