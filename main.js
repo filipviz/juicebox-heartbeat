@@ -70,7 +70,7 @@ async function main() {
                   },
                   {
                     name: `Project`,
-                    value: `[${project_name}](https://juicebox.money/${pv === '2' ? 'v2/p/' + payEvent.projectId : 'p/' + payEvent.project.handle })`,
+                    value: `[${project_name}](https://juicebox.money/${payEvent.pv === '2' ? 'v2/p/' + payEvent.projectId : 'p/' + payEvent.project.handle })`,
                     inline: true,
                   },
                 ],
