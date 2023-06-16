@@ -87,7 +87,11 @@ async function handlePayEvents() {
 
       postToDiscordWebhook(
         `Payment to ${project_name}`,
-        `https://etherscan.io/tx/${payEvent.txHash}`,
+        `[${project_name}](https://juicebox.money/${
+          payEvent.pv === "2"
+            ? "v2/p/" + payEvent.projectId
+            : "p/" + payEvent.project.handle
+        })`,
         [
           {
             name: `Amount`,
@@ -100,12 +104,8 @@ async function handlePayEvents() {
             inline: true,
           },
           {
-            name: `Project`,
-            value: `[${project_name}](https://juicebox.money/${
-              payEvent.pv === "2"
-                ? "v2/p/" + payEvent.projectId
-                : "p/" + payEvent.project.handle
-            })`,
+            name: `Transaction`,
+            value: `[Etherscan](https://etherscan.io/tx/${payEvent.txHash})`,
             inline: true,
           },
         ],
@@ -134,20 +134,20 @@ async function handleCreateEvents() {
 
       postToDiscordWebhook(
         `New Project: ${project_name}`,
-        `https://etherscan.io/tx/${projectCreateEvent.txHash}`,
+        `https://juicebox.money/${
+          projectCreateEvent.pv === "2"
+            ? "v2/p/" + projectCreateEvent.projectId
+            : "p/" + projectCreateEvent.project.handle
+        })`,
         [
-          {
-            name: `Project`,
-            value: `[${project_name}](https://juicebox.money/${
-              projectCreateEvent.pv === "2"
-                ? "v2/p/" + projectCreateEvent.projectId
-                : "p/" + projectCreateEvent.project.handle
-            })`,
-            inline: true,
-          },
           {
             name: `Creator`,
             value: `[${from}](https://juicebox.money/account/${projectCreateEvent.from})`,
+            inline: true,
+          },
+          {
+            name: `Transaction`,
+            value: `[Etherscan](https://etherscan.io/tx/${projectCreateEvent.txHash})`,
             inline: true,
           },
           {
@@ -166,8 +166,7 @@ async function handleCreateEvents() {
       );
     }
   });
-
 }
 
-handlePayEvents()
-handleCreateEvents()
+handlePayEvents();
+handleCreateEvents();
