@@ -71,7 +71,7 @@ async function postToDiscordWebhook(title, url, fields, thumbnail) {
         },
       ],
     }),
-  });
+  })
 }
 
 async function handlePayEvents() {
@@ -87,11 +87,11 @@ async function handlePayEvents() {
 
       postToDiscordWebhook(
         `Payment to ${project_name}`,
-        `[${project_name}](https://juicebox.money/${
+        `https://juicebox.money/${
           payEvent.pv === "2"
             ? "v2/p/" + payEvent.projectId
             : "p/" + payEvent.project.handle
-        })`,
+        }`,
         [
           {
             name: `Amount`,
