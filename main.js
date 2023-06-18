@@ -138,7 +138,7 @@ async function handleCreateEvents() {
           projectCreateEvent.pv === "2"
             ? "v2/p/" + projectCreateEvent.projectId
             : "p/" + projectCreateEvent.project.handle
-        })`,
+        }`,
         [
           {
             name: `Creator`,
