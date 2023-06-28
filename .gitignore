@@ -1,2 +1,4 @@
 .env
 node_modules
+errors.txt
+recent-runs.json
