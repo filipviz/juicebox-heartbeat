@@ -5,6 +5,7 @@ dotenv.config();
 // Constants
 const discord_webhook = process.env.DISCORD_WEBHOOK;
 const juicebox_subgraph = process.env.JUICEBOX_SUBGRAPH;
+console.log("Juicebox Heartbeat initialized.");
 
 if (!fs.existsSync("recent-runs.json")) {
   fs.writeFileSync(
@@ -15,6 +16,7 @@ if (!fs.existsSync("recent-runs.json")) {
     }),
     { encoding: "utf8" }
   );
+  console.log("Created new recent-runs.json");
 }
 
 let { lastPayEventTime, lastProjectCreateEventTime } = JSON.parse(
@@ -33,6 +35,7 @@ const payEventsQuery = `{
     txHash
     pv
     timestamp
+    note
   }
 }`;
 
@@ -71,6 +74,7 @@ async function resolveEns(address) {
 }
 
 async function postToDiscordWebhook(title, url, fields, thumbnail) {
+  console.log(`New webhook post: ${title}`)
   fetch(discord_webhook, {
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -108,6 +112,9 @@ async function handlePayEvents() {
               : "p/" + payEvent.project.handle
           }`,
           [
+            ...(payEvent.note
+              ? [{ name: `Memo`, value: payEvent.note, inline: false }]
+              : []),
             {
               name: `Amount`,
               value: `${payEvent.amount / 1e18} ETH`,
