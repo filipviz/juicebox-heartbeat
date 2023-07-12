@@ -113,7 +113,7 @@ async function handlePayEvents() {
           }`,
           [
             ...(payEvent.note
-              ? [{ name: `Memo`, value: payEvent.note, inline: false }]
+              ? [{ name: `Note`, value: `*${payEvent.note}*`, inline: false }]
               : []),
             {
               name: `Amount`,
