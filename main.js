@@ -1,6 +1,10 @@
-import fs from "fs";
-import dotenv from "dotenv";
+const fs = require("fs");
+const TurndownService = require("turndown");
+const dotenv = require("dotenv");
 dotenv.config();
+dotenv.config();
+
+const turndownService = new TurndownService();
 
 // Constants
 const discord_webhook = process.env.DISCORD_WEBHOOK;
@@ -74,7 +78,7 @@ async function resolveEns(address) {
 }
 
 async function postToDiscordWebhook(title, url, fields, thumbnail) {
-  console.log(`New webhook post: ${title}`)
+  console.log(`New webhook post: ${title}`);
   fetch(discord_webhook, {
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -89,7 +93,9 @@ async function postToDiscordWebhook(title, url, fields, thumbnail) {
         },
       ],
     }),
-  });
+  })
+    .then((res) => res.text())
+    .then((x) => console.log(x));
 }
 
 async function handlePayEvents() {
@@ -166,6 +172,12 @@ async function handleCreateEvents() {
           ? metadata.name
           : `v${projectCreateEvent.pv} project ${projectCreateEvent.projectId}`;
 
+        const containsHTML = /<\/?[a-z][\s\S]*>/i.test(metadata.description);
+
+        const processedDescription = containsHTML
+          ? turndownService.turndown(metadata.description).slice(0, 1000)
+          : metadata.description.slice(0, 1000);
+
         postToDiscordWebhook(
           `New Project: ${project_name}`,
           `https://juicebox.money/${
@@ -186,7 +198,7 @@ async function handleCreateEvents() {
             },
             {
               name: `Description`,
-              value: metadata.description,
+              value: processedDescription,
               inline: false,
             },
           ],
@@ -212,12 +224,18 @@ async function handleCreateEvents() {
   });
 }
 
-await Promise.all([handlePayEvents(), handleCreateEvents()]);
-fs.writeFileSync(
-  "recent-runs.json",
-  JSON.stringify({
-    lastPayEventTime,
-    lastProjectCreateEventTime,
-  }),
-  { encoding: "utf8" }
-);
+async function main() {
+  await Promise.all([handlePayEvents(), handleCreateEvents()]);
+  fs.writeFileSync(
+    "recent-runs.json",
+    JSON.stringify({
+      lastPayEventTime,
+      lastProjectCreateEventTime,
+    }),
+    { encoding: "utf8" }
+  );
+}
+
+main().catch((error) => {
+  console.error("An error occurred:", error);
+});

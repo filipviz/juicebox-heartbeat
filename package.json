@@ -5,11 +5,15 @@
   "main": "main.js",
   "author": "filipviz",
   "license": "MIT",
-  "type": "module",
+  "type": "commonjs",
   "dependencies": {
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "turndown": "^7.1.2"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/turndown": "^5.0.1"
   }
 }
