@@ -5,6 +5,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const turndownService = new TurndownService();
+turndownService.addRule("removeImages", {
+  filter: ["img"],
+  replacement: () => "",
+});
 
 const juicebox_discord_webhook = process.env.JUICEBOX_WEBHOOK;
 const peel_discord_webhook = process.env.PEEL_WEBHOOK;
@@ -184,9 +188,9 @@ async function handleCreateEvents() {
         const processedDescription = containsHTML
           ? turndownService
               .turndown(metadata.description)
-              .replace(/\n+/g, "\n")
+              .replace(/\n\s*/g, "\n\n")
               .slice(0, 1000)
-          : metadata.description.slice(0, 1000);
+          : metadata.description.replace(/\n\s*/g, "\n\n").slice(0, 1000);
 
         for (const webhook of [juicebox_discord_webhook, peel_discord_webhook])
           postToDiscordWebhook(
