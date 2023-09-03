@@ -1,7 +1,7 @@
 const fs = require("fs");
 const TurndownService = require("turndown");
 const dotenv = require("dotenv");
-dotenv.config();
+
 dotenv.config();
 
 const turndownService = new TurndownService();
