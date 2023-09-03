@@ -6,8 +6,8 @@ dotenv.config();
 
 const turndownService = new TurndownService();
 
-// Constants
-const discord_webhook = process.env.DISCORD_WEBHOOK;
+const juicebox_discord_webhook = process.env.JUICEBOX_WEBHOOK;
+const peel_discord_webhook = process.env.PEEL_WEBHOOK;
 const juicebox_subgraph = process.env.JUICEBOX_SUBGRAPH;
 console.log("Juicebox Heartbeat initialized.");
 
@@ -77,9 +77,15 @@ async function resolveEns(address) {
   return ens.name ? ens.name : address;
 }
 
-async function postToDiscordWebhook(title, url, fields, thumbnail) {
+async function postToDiscordWebhook(
+  webhook_url,
+  title,
+  url,
+  fields,
+  thumbnail
+) {
   console.log(`New webhook post: ${title}`);
-  fetch(discord_webhook, {
+  fetch(webhook_url, {
     headers: { "Content-Type": "application/json" },
     method: "POST",
     body: JSON.stringify({
@@ -111,6 +117,7 @@ async function handlePayEvents() {
           : `v${payEvent.pv} project ${payEvent.projectId}`;
 
         postToDiscordWebhook(
+          juicebox_discord_webhook,
           `Payment to ${project_name}`,
           `https://juicebox.money/${
             payEvent.pv === "2"
@@ -175,49 +182,54 @@ async function handleCreateEvents() {
         const containsHTML = /<\/?[a-z][\s\S]*>/i.test(metadata.description);
 
         const processedDescription = containsHTML
-          ? turndownService.turndown(metadata.description).slice(0, 1000)
+          ? turndownService
+              .turndown(metadata.description)
+              .replace(/\n+/g, "\n")
+              .slice(0, 1000)
           : metadata.description.slice(0, 1000);
 
-        postToDiscordWebhook(
-          `New Project: ${project_name}`,
-          `https://juicebox.money/${
-            projectCreateEvent.pv === "2"
-              ? "v2/p/" + projectCreateEvent.projectId
-              : "p/" + projectCreateEvent.project.handle
-          }`,
-          [
+        for (const webhook of [juicebox_discord_webhook, peel_discord_webhook])
+          postToDiscordWebhook(
+            webhook,
+            `New Project: ${project_name}`,
+            `https://juicebox.money/${
+              projectCreateEvent.pv === "2"
+                ? "v2/p/" + projectCreateEvent.projectId
+                : "p/" + projectCreateEvent.project.handle
+            }`,
+            [
+              {
+                name: `Creator`,
+                value: `[${from}](https://juicebox.money/account/${projectCreateEvent.from})`,
+                inline: true,
+              },
+              {
+                name: `Transaction`,
+                value: `[Etherscan](https://etherscan.io/tx/${projectCreateEvent.txHash})`,
+                inline: true,
+              },
+              {
+                name: `Description`,
+                value: processedDescription,
+                inline: false,
+              },
+            ],
             {
-              name: `Creator`,
-              value: `[${from}](https://juicebox.money/account/${projectCreateEvent.from})`,
-              inline: true,
-            },
-            {
-              name: `Transaction`,
-              value: `[Etherscan](https://etherscan.io/tx/${projectCreateEvent.txHash})`,
-              inline: true,
-            },
-            {
-              name: `Description`,
-              value: processedDescription,
-              inline: false,
-            },
-          ],
-          {
-            url: metadata.logoUri
-              ? `https://ipfs.io/ipfs/${metadata.logoUri.substring(
-                  metadata.logoUri.lastIndexOf("/") + 1
-                )}`
-              : undefined,
-          }
-        )
-          .then(() => {
-            if (projectCreateEvent.timestamp > lastProjectCreateEventTime)
-              lastProjectCreateEventTime = projectCreateEvent.timestamp;
-          })
-          .catch((e) => {
-            fs.appendFileSync("errors.txt", e, { encoding: "utf8" });
-            reject(e);
-          });
+              url: metadata.logoUri
+                ? `https://ipfs.io/ipfs/${metadata.logoUri.substring(
+                    metadata.logoUri.lastIndexOf("/") + 1
+                  )}`
+                : undefined,
+            }
+          )
+            .then(() => {
+              if (projectCreateEvent.timestamp > lastProjectCreateEventTime)
+                lastProjectCreateEventTime = projectCreateEvent.timestamp;
+            })
+            .catch((e) => {
+              fs.appendFileSync("errors.txt", e, { encoding: "utf8" });
+              reject(e);
+            });
       }
       resolve();
     });
